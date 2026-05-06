@@ -3,10 +3,10 @@ A ReaScript made for reading Lighting events on Rock Band charts
 
 <img width="1002" height="432" alt="image" src="https://github.com/user-attachments/assets/3e24b56b-6fc5-41b9-8578-af781927a94e" />
 <br/>
-It has support for _manual_ and _auto_ lighting events, as such as fades.
+It has support for manual and auto lighting events, as such as fades.
 <br/>
 <br/>
-**Note**: The script is still unfinished, so the color sequences for some lighting events (mainly the **_auto_** ones) aren't finished yet
+Note: The script is still unfinished, so the color sequences for some lighting events (mainly the auto ones) aren't finished yet
 
 # Modes
 This script is able to read the events from the VENUE or LIGHTING tracks. You can toggle between each mode using the "Track:" button.
