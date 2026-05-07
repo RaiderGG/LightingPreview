@@ -16,7 +16,7 @@ NextTime = NextTime or 0
 Offset=0
 CurTime=0
 LastTime = 0
-EventsList=0
+EventsHash=0
 DisplayedLighting = ''
 Step = 1
 MaxSteps = 1
@@ -68,7 +68,7 @@ local lighting = { --each step in every lighting effect (or at least my try)
     flare_slow =        {{1,1,1,1,1,1}},
     flare_fast =        {{1,1,1,1,1,1}},
     bre =               {{2,7,2,8,7,2},{8,2,7,2,2,2}},
-    test =              {{2,2,2,2,2,2}},
+    none =              {{2,2,2,2,2,2}},
     intro =             {{2,2,2,2,2,2}}
 }
 local pattern = ((lighting[DisplayedLighting]))
@@ -111,8 +111,9 @@ local function updEvents(take)
     
     VenueTrack = FindTrack(SelectedTrack)
     if not VenueTrack or rp.CountTrackMediaItems(VenueTrack) == 0 then
-        EventsList = "" 
-        DisplayedLighting = "test"
+        EventsHash = "" 
+        DisplayedLighting = "none"
+
     else
         local midi_item = nil
         for i = 0, rp.CountTrackMediaItems(VenueTrack) - 1 do
@@ -122,8 +123,11 @@ local function updEvents(take)
             if take and rp.TakeIsMIDI(take) then
 
                 local _,hash=rp.MIDI_GetHash(take,false)
-                if EventsList~=hash then
+                if EventsHash~=hash then
                     --rp.ClearConsole()
+                    rp.ShowConsoleMsg("reset\n")
+                    rp.ShowConsoleMsg("hash: " .. EventsHash .. "\n")
+                    
                     LightEvts={}
                     _,_,_,EventCount = rp.MIDI_CountEvts(take)
                     if EventCount == 0 then
@@ -143,15 +147,9 @@ local function updEvents(take)
                             end
                         end
                         
-                        if #LightEvts > 0 and CurTime < LightEvts[1][1] then
-                            if DisplayedLighting ~= "test" then
-                                DisplayedLighting = "test"
-                                LastTime =0
-                            end
-                            return
-                        end
                     end
-                    EventsList=hash
+                    EventsHash=hash
+                    
                 end
             end
         end
@@ -181,7 +179,7 @@ local function compareCycle()
 end
 
 local function compareLighting()
-        local activeLighting = tostring(LightEvts[1][2]) or "test"
+        local activeLighting = tostring(LightEvts[1][2]) or "none"
         local nextLighting, nextTime
 
         -- Detect current and next lighting events
@@ -337,7 +335,7 @@ local function drawDotMatrix(x0, y0, radius, spacing, mode)
 
                     local t = math.min((CurTime - fade.startTime) / (fade.endTime - fade.startTime), 1)
                     r, g, b, a = colorInterpolation(colorA, colorB, t)
-                    break -- solo aplicamos el primer fade activo
+                    break -- only apply the first active fade
                 end
             end
 
@@ -388,6 +386,12 @@ local function loop()
         if #LightEvts > 0 then
             compareCycle()
             compareLighting()
+            if CurTime < LightEvts[1][1] then
+                if DisplayedLighting ~= "none" then
+                    DisplayedLighting = "none"
+                    LastTime =0
+                end
+            end
         end
     end
     local mode = LightingMode[DisplayedLighting] or LightingMode.default
@@ -418,6 +422,10 @@ local function loop()
                 SelectedTrackIndex = 1
                 end
             SelectedTrack = TrackOptions[SelectedTrackIndex]
+            
+            rp.ClearConsole()
+            rp.ShowConsoleMsg("\nhash:" .. EventsHash)
+            rp.ShowConsoleMsg("\nEvents:" .. EventCount .. "\n")
         end
     end
     Mouse_last_state = mouse_now
@@ -441,7 +449,11 @@ local function loop()
 
 
     -- Draw Dot Matrix
-    drawDotMatrix(200, 160, radius, distance, mode)
+    if #LightEvts > 0 then
+        drawDotMatrix(200, 160, radius, distance, mode)
+    else
+        DisplayedLighting="none"
+    end
 
     gfx.update()
     if gfx.getchar() ~= -1 then
