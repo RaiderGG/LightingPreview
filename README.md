@@ -23,10 +23,10 @@ LIGHTING track mode.
 
 ## Installation
 
-1. Download the repository a .zip
+1. Download the repository a **.zip**
 2. Extract **.lua** and **assets** folder to **%appdata%/REAPER/Scripts**
-3. In REAPER, go to **Actions > Show action list...**
-4. Click New action... and then Load ReaScript\
+3. In **REAPER**, go to **Actions > Show action list...**
+4. Click **New action...** and then **Load ReaScript**\
 4.1. Navigate to **%appdata%/REAPER/Scripts**\
-4.2. Select LightingPreview.lua and click Open
+4.2. Select **LightingPreview.lua** and click **Open**
 5. Optionally, add a keybind, or use the Menu Editor to add the action to a menu
