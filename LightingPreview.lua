@@ -126,8 +126,8 @@ local function updEvents(take)
                 local _,hash=rp.MIDI_GetHash(take,false)
                 if EventsHash~=hash then
                     --rp.ClearConsole()
-                    rp.ShowConsoleMsg("reset\n")
-                    rp.ShowConsoleMsg("hash: " .. EventsHash .. "\n")
+                    --rp.ShowConsoleMsg("reset\n")
+                    --rp.ShowConsoleMsg("hash: " .. EventsHash .. "\n")
                     CycleEvts = {}
                     LightEvts={}
                     EventCount = 0
@@ -269,9 +269,9 @@ local function drawDotMatrix(x0, y0, radius, spacing, mode)
                 
             if mode == "strobe_8" or mode == "strobe_16" then
                 if mode == "strobe_16" then
-                    LoopStepDuration = (60 / Bpm)/2.2
+                    LoopStepDuration = (60 / Bpm)/4.5
                 else
-                    LoopStepDuration = (60 / Bpm)/1.05
+                    LoopStepDuration = (60 / Bpm)/2.2
                 end
                 if CurPos - LoopStepTime >= LoopStepDuration then
                     Step = Step + 1
