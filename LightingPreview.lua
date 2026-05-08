@@ -162,69 +162,69 @@ local function updEvents(take)
 end
 
 local function parseLighting()
-        local activeLighting = tostring(LightEvts[1][2]) or "none"
-        local nextLighting, nextTime
+    local activeLighting = tostring(LightEvts[1][2]) or "none"
+    local nextLighting, nextTime
 
-        -- Detect current and next lighting events
-        if LightEvts=={}  then
-        else
-            for i = 1, #LightEvts do
-                local LightingTime = LightEvts[i][1]
-                local LightingName = LightEvts[i][2]
-                if LightingTime <= CurPos then
-                    activeLighting = LightingName
-                    if i < #LightEvts then
-                        nextTime, nextLighting = table.unpack(LightEvts[i + 1])
-                    end
-                else
-                    break
+    -- Detect current and next lighting events
+    if LightEvts=={}  then
+    else
+        for i = 1, #LightEvts do
+            local LightingTime = LightEvts[i][1]
+            local LightingName = LightEvts[i][2]
+            if LightingTime <= CurPos then
+                activeLighting = LightingName
+                if i < #LightEvts then
+                    nextTime, nextLighting = table.unpack(LightEvts[i + 1])
                 end
-            end
-        end
-
-        -- Detecting where are valid transitions (2 same events and a different one)
-        for i = 1, #LightEvts - 2 do
-            local name1 = LightEvts[i][2]
-            local name2 = LightEvts[i + 1][2]
-            local name3 = LightEvts[i + 2][2]
-
-            if name1 == name2 and name2 ~= name3 then
-                FadeStartTime = LightEvts[i + 1][1]
-                FadeEndTime = LightEvts[i + 2][1]
-                FadeFrom = name2
-                FadeTo = name3
+            else
                 break
             end
         end
-
-        -- Detect event changes
-        if DisplayedLighting ~= activeLighting then
-            Step = 1
-            StepTime = CurPos
-            LoopStepTime = CurPos
-        end
-
-        DetectedFades = {}
-
-        for i = 1, #LightEvts - 2 do
-            local name1 = LightEvts[i][2]
-            local name2 = LightEvts[i + 1][2]
-            local name3 = LightEvts[i + 2][2]
-
-            if name1 == name2 and name2 ~= name3 then
-                table.insert(DetectedFades, {
-                    from = name2,
-                    to = name3,
-                    startTime = LightEvts[i + 1][1],
-                    endTime = LightEvts[i + 2][1]
-                })
-            end
-        end
-        -- Update current lighting and transitions
-        DisplayedLighting = activeLighting
-        NextLighting = nextLighting
-        NextTime = nextTime
     end
+
+    -- Detecting where are valid transitions (2 same events and a different one)
+    for i = 1, #LightEvts - 2 do
+        local name1 = LightEvts[i][2]
+        local name2 = LightEvts[i + 1][2]
+        local name3 = LightEvts[i + 2][2]
+
+        if name1 == name2 and name2 ~= name3 then
+            FadeStartTime = LightEvts[i + 1][1]
+            FadeEndTime = LightEvts[i + 2][1]
+            FadeFrom = name2
+            FadeTo = name3
+            break
+        end
+    end
+
+    -- Detect event changes
+    if DisplayedLighting ~= activeLighting then
+        Step = 1
+        StepTime = CurPos
+        LoopStepTime = CurPos
+    end
+
+    DetectedFades = {}
+
+    for i = 1, #LightEvts - 2 do
+        local name1 = LightEvts[i][2]
+        local name2 = LightEvts[i + 1][2]
+        local name3 = LightEvts[i + 2][2]
+
+        if name1 == name2 and name2 ~= name3 then
+            table.insert(DetectedFades, {
+                from = name2,
+                to = name3,
+                startTime = LightEvts[i + 1][1],
+                endTime = LightEvts[i + 2][1]
+            })
+        end
+    end
+    -- Update current lighting and transitions
+    DisplayedLighting = activeLighting
+    NextLighting = nextLighting
+    NextTime = nextTime
+end
 
 local function colorInterpolation(c1, c2, t)
     c1 = type(c1) == "table" and c1 or {0, 0, 0, 0}
@@ -317,8 +317,18 @@ local function drawDotMatrix(x0, y0, radius, spacing, mode)
                     MaxSteps = #pattern
                     for i = 1, #CycleEvts do
                         local CycleTime = CycleEvts[i][1]
+                        local msg = CycleEvts[i][2]
                         if CycleTime > LastTime and CycleTime <= CurPos then
-                            Step = Step + 1
+                            if msg == "next" then
+                                Step = Step + 1
+                            elseif msg == "prev" then
+                                Step = Step - 1
+                                if Step < 1 then
+                                Step = MaxSteps
+                                end
+                            else
+                                Step = 1
+                            end
                             if Step > MaxSteps then Step = 1 end
                             LastTime = CurPos
                         end
@@ -379,11 +389,12 @@ local function loop()
     else
         CurPos = rp.GetCursorPosition()
         if CurPos < LastTime then
-                LastTime = 0
-                LoopStepTime= 0
-            end
+            LastTime = 0
+            LoopStepTime= 0
+        end
     end
     _,_,Bpm = reaper.TimeMap_GetTimeSigAtTime(0,CurPos)
+    
     
     if not VenueTrack or rp.CountTrackMediaItems(VenueTrack) == 0 then
         return
@@ -396,6 +407,10 @@ local function loop()
                     LastTime = 0
                 end
             end
+        else
+            LightEvts = {}
+            LastTime = 0
+            LoopStepTime = 0
         end
     end
     
